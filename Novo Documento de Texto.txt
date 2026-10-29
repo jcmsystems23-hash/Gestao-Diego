@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Frota e Financeiro</title>
+<style>
+:root{font-family:Arial,sans-serif;color:#202938;background:#f3f5f8}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#17365d;color:white;padding:22px}
+header h1{margin:0 0 7px;font-size:23px}
+header p{margin:0;color:#d8e5f5}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px;background:white}
+button{cursor:pointer;border:0;border-radius:7px;padding:10px 14px;background:#1c5b9b;color:white}
+nav button{background:#e7edf5;color:#17365d}
+nav button.active{background:#17365d;color:white}
+main{max-width:1100px;margin:auto;padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.card,.panel{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 8px #182c4010;margin-bottom:16px}
+.card small{color:#667085}
+.card strong{display:block;font-size:25px;margin-top:10px}
+h2{font-size:20px;margin-top:0}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label{display:block;font-size:13px;color:#475467}
+input,select,textarea{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;background:white}
+form button{align-self:end}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #e5e7eb;font-size:14px}
+th{background:#f8fafc}
+.table-wrap{overflow-x:auto}
+.hidden{display:none!important}
+.positive{color:#16803c}.negative{color:#c0392b}
+.muted{color:#667085;font-size:13px}
+.delete{background:#b42318;padding:6px 9px}
+footer{text-align:center;color:#667085;font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Gestão de Frota e Financeiro</h1>
+  <p>Controle financeiro, veículos e viagens da empresa</p>
+</header>
+<nav>
+  <button class="active" data-tab="inicio">Painel</button>
+  <button data-tab="lancamentos">Financeiro</button>
+  <button data-tab="veiculos">Veículos</button>
+  <button data-tab="viagens">Viagens</button>
+</nav>
+<main>
+<section id="inicio">
+  <div class="cards">
+    <div class="card"><small>Receitas registradas</small><strong id="receitas">R$ 0,00</strong></div>
+    <div class="card"><small>Despesas registradas</small><strong id="despesas">R$ 0,00</strong></div>
+    <div class="card"><small>Saldo dos lançamentos</small><strong id="saldo">R$ 0,00</strong></div>
+    <div class="card"><small>Veículos cadastrados</small><strong id="totalVeiculos">0</strong></div>
+  </div>
+  <div class="panel">
+    <h2>Últimos lançamentos</h2>
+    <div id="ultimos" class="muted">Nenhum lançamento registrado.</div>
+  </div>
+  <div class="panel">
+    <h2>Atenção</h2>
+    <p>Este painel mostra os lançamentos cadastrados neste navegador. O saldo não representa necessariamente o lucro contábil da empresa.</p>
+  </div>
+</section>
+
+<section id="lancamentos" class="hidden">
+  <div class="panel">
+    <h2>Novo lançamento financeiro</h2>
+    <form id="formFinanceiro">
+      <label>Tipo
+        <select id="tipo" required>
+          <option value="receita">Receita / a receber</option>
+          <option value="despesa">Despesa / a pagar</option>
+        </select>
+      </label>
+      <label>Descrição<input id="descricao" required placeholder="Ex.: Venda de serragem"></label>
+      <label>Cliente ou fornecedor<input id="pessoa" placeholder="Nome"></label>
+      <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required></label>
+      <label>Vencimento<input id="vencimento" type="date"></label>
+      <label>Situação
+        <select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select>
+      </label>
+      <button type="submit">Salvar lançamento</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Registros financeiros</h2>
+    <div class="table-wrap"><table><thead><tr>
+      <th>Tipo</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ação</th>
+    </tr></thead><tbody id="listaFinanceira"></tbody></table></div>
+  </div>
+</section>
+
+<section id="veiculos" class="hidden">
+  <div class="panel">
+    <h2>Cadastrar veículo</h2>
+    <form id="formVeiculo">
+      <label>Descrição<input id="nomeVeiculo" required placeholder="Ex.: Caminhão Volvo"></label>
+      <label>Tipo<select id="tipoVeiculo">
+        <option>Strada</option><option>Caminhão</option><option>Cavalo mecânico</option><option>Carreta</option><option>Semirreboque</option><option>Outro</option>
+      </select></label>
+      <label>Placa<input id="placa" placeholder="ABC1D23"></label>
+      <button type="submit">Cadastrar veículo</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Frota cadastrada</h2>
+    <div class="table-wrap"><table><thead><tr><th>Descrição</th><th>Tipo</th><th>Placa</th><th>Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
+  </div>
+</section>
+
+<section id="viagens" class="hidden">
+  <div class="panel">
+    <h2>Registrar viagem</h2>
+    <form id="formViagem">
+      <label>Data<input id="dataViagem" type="date" required></label>
+      <label>Veículo<select id="veiculoViagem" required></select></label>
+      <label>Origem<input id="origem" required></label>
+      <label>Destino<input id="destino" required></label>
+      <label>Produto transportado<input id="produto" placeholder="Ex.: Cavaco"></label>
+      <label>Toneladas<input id="toneladas" type="number" min="0" step="0.01"></label>
+      <label>Valor do frete (R$)<input id="frete" type="number" min="0" step="0.01"></label>
+      <button type="submit">Salvar viagem</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Histórico de viagens</h2>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Veículo</th><th>Trajeto</th><th>Produto</th><th>Toneladas</th><th>Frete</th><th>Ação</th></tr></thead><tbody id="listaViagens"></tbody></table></div>
+  </div>
+</section>
+</main>
+<footer>Protótipo inicial • Dados armazenados localmente neste navegador</footer>
+<script>
+const ler = chave => {
+  try { return JSON.parse(localStorage.getItem(chave)) || []; }
+  catch { return []; }
+};
+const dados = {
+  financeiro: ler("gf_financeiro"),
+  veiculos: ler("gf_veiculos"),
+  viagens: ler("gf_viagens")
+};
+const salvar = () => {
+  Object.entries(dados).forEach(([k,v]) =>
+    localStorage.setItem("gf_"+k,v ? JSON.stringify(v) : "[]")
+  );
+  renderizar();
+};
+const el = id => document.getElementById(id);
+const dinheiro = n => Number(n || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const seguro = v => String(v ?? "").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+const idNovo = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random());
+
+document.querySelectorAll("nav button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));
+    document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==btn.dataset.tab));
+  });
+});
+
+el("formFinanceiro").addEventListener("submit",e=>{
+  e.preventDefault();
+  dados.financeiro.push({
+    id:idNovo(),tipo:el("tipo").value,descricao:el("descricao").value.trim(),
+    pessoa:el("pessoa").value.trim(),valor:Math.round(Number(el("valor").value)*100)/100,
+    vencimento:el("vencimento").value,situacao:el("situacao").value
+  });
+  e.target.reset(); salvar();
+});
+el("formVeiculo").addEventListener("submit",e=>{
+  e.preventDefault();
+  const placa=el("placa").value.trim().toUpperCase();
+  if(placa && dados.veiculos.some(v=>v.placa===placa)){
+    alert("Já existe um veículo com essa placa.");return;
+  }
+  dados.veiculos.push({id:idNovo(),nome:el("nomeVeiculo").value.trim(),tipo:el("tipoVeiculo").value,placa});
+  e.target.reset(); salvar();
+});
+el("formViagem").addEventListener("submit",e=>{
+  e.preventDefault();
+  dados.viagens.push({
+    id:idNovo(),data:el("dataViagem").value,veiculoId:el("veiculoViagem").value,
+    origem:el("origem").value.trim(),destino:el("destino").value.trim(),
+    produto:el("produto").value.trim(),toneladas:Number(el("toneladas").value||0),
+    frete:Math.round(Number(el("frete").value||0)*100)/100
+  });
+  e.target.reset(); salvar();
+});
+function remover(grupo,id){
+  if(!confirm("Deseja excluir este registro?"))return;
+  dados[grupo]=dados[grupo].filter(x=>x.id!==id); salvar();
+}
+function acao(grupo,id){
+  return `<button class="delete" data-remover="${grupo}" data-id="${id}">Excluir</button>`;
+}
+function renderizar(){
+  const soma=tipo=>dados.financeiro.filter(x=>x.tipo===tipo).reduce((s,x)=>s+Number(x.valor),0);
+  el("receitas").textContent=dinheiro(soma("receita"));
+  el("despesas").textContent=dinheiro(soma("despesa"));
+  const saldo=soma("receita")-soma("despesa");
+  el("saldo").textContent=dinheiro(saldo);
+  el("saldo").className=saldo<0?"negative":"positive";
+  el("totalVeiculos").textContent=dados.veiculos.length;
+  el("ultimos").innerHTML=dados.financeiro.length
+    ? [...dados.financeiro].reverse().slice(0,5).map(x=>
+      `<p>${seguro(x.descricao)} — ${dinheiro(x.valor)} (${seguro(x.situacao)})</p>`).join("")
+    : "Nenhum lançamento registrado.";
+  el("listaFinanceira").innerHTML=dados.financeiro.map(x=>`<tr>
+    <td>${seguro(x.tipo)}</td><td>${seguro(x.descricao)}<br><small>${seguro(x.pessoa)}</small></td>
+    <td>${dinheiro(x.valor)}</td><td>${seguro(x.vencimento||"—")}</td>
+    <td>${seguro(x.situacao)}</td><td>${acao("financeiro",x.id)}</td></tr>`).join("");
+  el("listaVeiculos").innerHTML=dados.veiculos.map(x=>`<tr>
+    <td>${seguro(x.nome)}</td><td>${seguro(x.tipo)}</td><td>${seguro(x.placa||"—")}</td>
+    <td>${acao("veiculos",x.id)}</td></tr>`).join("");
+  el("veiculoViagem").innerHTML=dados.veiculos.map(x=>
+    `<option value="${seguro(x.id)}">${seguro(x.nome)}${x.placa?" — "+seguro(x.placa):""}</option>`).join("");
+  el("listaViagens").innerHTML=dados.viagens.map(x=>{
+    const v=dados.veiculos.find(v=>v.id===x.veiculoId);
+    return `<tr><td>${seguro(x.data)}</td><td>${seguro(v?.nome||"Veículo removido")}</td>
+    <td>${seguro(x.origem)} → ${seguro(x.destino)}</td><td>${seguro(x.produto)}</td>
+    <td>${x.toneladas}</td><td>${dinheiro(x.frete)}</td><td>${acao("viagens",x.id)}</td></tr>`;
+  }).join("");
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-remover]");
+  if(b)remover(b.dataset.remover,b.dataset.id);
+});
+renderizar();
+</script>
+</body>
+</html>
