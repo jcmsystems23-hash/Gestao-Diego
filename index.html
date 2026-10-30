@@ -8,7 +8,7 @@
 :root{font-family:Arial,sans-serif;color:#202938;background:#f3f5f8}
 *{box-sizing:border-box}
 body{margin:0}
-header{background:#17365d;color:white;padding:22px}
+header{background:#17365d;color:white;padding:22px;display:flex;justify-content:space-between;align-items:center}
 header h1{margin:0 0 7px;font-size:23px}
 header p{margin:0;color:#d8e5f5}
 nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px;background:white}
@@ -35,142 +35,193 @@ th{background:#f8fafc}
 .delete{background:#b42318;padding:6px 9px}
 .alert-vencido{background:#fecdca;color:#912018;padding:4px 8px;border-radius:4px;font-weight:bold}
 .alert-ok{background:#d1fadf;color:#027a48;padding:4px 8px;border-radius:4px}
+#loginScreen{max-width:400px;margin:80px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+#loginScreen form{display:flex;flex-direction:column;gap:15px}
 footer{text-align:center;color:#667085;font-size:12px;padding:20px}
 </style>
 </head>
 <body>
-<header>
-  <h1>Gestão de Frota e Financeiro</h1>
-  <p>Controle financeiro, veículos e documentos da empresa</p>
-</header>
-<nav>
-  <button class="active" data-tab="inicio">Painel</button>
-  <button data-tab="empresas">Empresas</button>
-  <button data-tab="veiculos">Veículos</button>
-  <button data-tab="lancamentos">Financeiro</button>
-  <button data-tab="xml">Importar XML</button>
-</nav>
-<main>
-<section id="inicio">
-  <div class="cards">
-    <div class="card"><small>Receitas registradas</small><strong id="receitas">R$ 0,00</strong></div>
-    <div class="card"><small>Despesas registradas</small><strong id="despesas">R$ 0,00</strong></div>
-    <div class="card"><small>Saldo dos lançamentos</small><strong id="saldo">R$ 0,00</strong></div>
-    <div class="card"><small>Veículos cadastrados</small><strong id="totalVeiculos">0</strong></div>
-  </div>
-  <div class="panel" style="margin-top:16px;">
-    <h2>Alertas de Vencimento de Veículos</h2>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Veículo</th><th>Documento / Seguro</th><th>Vencimento</th><th>Status</th></tr></thead>
-        <tbody id="listaAlertas"></tbody>
-      </table>
+
+<!-- TELA DE LOGIN -->
+<div id="loginScreen" class="hidden">
+  <h2>Acesso ao Sistema</h2>
+  <p class="muted">Insira as suas credenciais para entrar.</p>
+  <form id="formLogin">
+    <label>E-mail<input id="loginEmail" type="email" required placeholder="seu@email.com"></label>
+    <label>Palavra-passe<input id="loginSenha" type="password" required placeholder="********"></label>
+    <button type="submit" style="width:100%;margin-top:10px;">Entrar no Sistema</button>
+  </form>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL (Protegido) -->
+<div id="appContent" class="hidden">
+  <header>
+    <div>
+      <h1>Gestão de Frota e Financeiro</h1>
+      <p>Controle financeiro, veículos e documentos da empresa</p>
     </div>
-  </div>
-</section>
+    <button id="btnLogout" style="background:#b42318;">Terminar Sessão</button>
+  </header>
+  
+  <nav>
+    <button class="active" data-tab="inicio">Painel</button>
+    <button data-tab="empresas">Empresas</button>
+    <button data-tab="veiculos">Veículos</button>
+    <button data-tab="lancamentos">Financeiro</button>
+    <button data-tab="xml">Importar XML</button>
+  </nav>
 
-<section id="empresas" class="hidden">
-  <div class="panel">
-    <h2>Cadastrar Empresa Proprietária</h2>
-    <form id="formEmpresa">
-      <label>Razão Social / Nome<input id="nomeEmpresa" required placeholder="Ex.: Transportes Silva LTDA"></label>
-      <label>CNPJ<input id="cnpjEmpresa" placeholder="00.000.000/0001-00"></label>
-      <button type="submit">Salvar Empresa</button>
-    </form>
-  </div>
-  <div class="panel">
-    <h2>Empresas Cadastradas</h2>
-    <div class="table-wrap"><table><thead><tr><th>Razão Social</th><th>CNPJ</th><th>Ação</th></tr></thead><tbody id="listaEmpresas"></tbody></table></div>
-  </div>
-</section>
+  <main>
+    <section id="inicio">
+      <div class="cards">
+        <div class="card"><small>Receitas registradas</small><strong id="receitas">R$ 0,00</strong></div>
+        <div class="card"><small>Despesas registradas</small><strong id="despesas">R$ 0,00</strong></div>
+        <div class="card"><small>Saldo dos lançamentos</small><strong id="saldo">R$ 0,00</strong></div>
+        <div class="card"><small>Veículos cadastrados</small><strong id="totalVeiculos">0</strong></div>
+      </div>
+      <div class="panel" style="margin-top:16px;">
+        <h2>Alertas de Vencimento de Veículos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Veículo</th><th>Documento / Seguro</th><th>Vencimento</th><th>Status</th></tr></thead>
+            <tbody id="listaAlertas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-<section id="veiculos" class="hidden">
-  <div class="panel">
-    <h2>Cadastrar Veículo</h2>
-    <form id="formVeiculo">
-      <label>Empresa Proprietária
-        <select id="empresaVeiculo" required><option value="">Selecione...</option></select>
-      </label>
-      <label>Marca / Modelo<input id="nomeVeiculo" required placeholder="Ex.: Volvo FH 540"></label>
-      <label>Ano<input id="anoVeiculo" type="number" placeholder="2022"></label>
-      <label>Tipo<select id="tipoVeiculo">
-        <option>Carro</option><option>Caminhão</option><option>Carreta / Semirreboque</option><option>Outro</option>
-      </select></label>
-      <label>Placa<input id="placa" placeholder="ABC1D23" required></label>
-      <label>Vencimento CRLV / Doc<input id="vencDoc" type="date"></label>
-      <label>Vencimento Seguro<input id="vencSeguro" type="date"></label>
-      <button type="submit">Cadastrar Veículo</button>
-    </form>
-  </div>
-  <div class="panel">
-    <h2>Frota Cadastrada</h2>
-    <div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Veículo</th><th>Placa</th><th>Venc. Doc</th><th>Venc. Seguro</th><th>Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
-  </div>
-</section>
+    <section id="empresas" class="hidden">
+      <div class="panel">
+        <h2>Cadastrar Empresa Proprietária</h2>
+        <form id="formEmpresa">
+          <label>Razão Social / Nome<input id="nomeEmpresa" required placeholder="Ex.: Transportes Silva LTDA"></label>
+          <label>CNPJ<input id="cnpjEmpresa" placeholder="00.000.000/0001-00"></label>
+          <button type="submit">Salvar Empresa</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Empresas Cadastradas</h2>
+        <div class="table-wrap"><table><thead><tr><th>Razão Social</th><th>CNPJ</th><th>Ação</th></tr></thead><tbody id="listaEmpresas"></tbody></table></div>
+      </div>
+    </section>
 
-<section id="lancamentos" class="hidden">
-  <div class="panel">
-    <h2>Novo Lançamento Financeiro</h2>
-    <form id="formFinanceiro">
-      <label>Tipo
-        <select id="tipo" required>
-          <option value="receita">Receita (A Receber)</option>
-          <option value="despesa">Despesa (A Pagar)</option>
-        </select>
-      </label>
-      <label>Descrição<input id="descricao" required placeholder="Ex.: Serviço de frete"></label>
-      <label>Cliente / Fornecedor<input id="pessoa" placeholder="Nome da empresa/pessoa"></label>
-      <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required></label>
-      <label>Vencimento<input id="vencimento" type="date"></label>
-      <label>Situação
-        <select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select>
-      </label>
-      <button type="submit">Salvar Lançamento</button>
-    </form>
-  </div>
-  <div class="panel">
-    <h2>Registros Financeiros</h2>
-    <div class="table-wrap"><table><thead><tr>
-      <th>Tipo</th><th>Descrição</th><th>Cliente/Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ação</th>
-    </tr></thead><tbody id="listaFinanceira"></tbody></table></div>
-  </div>
-</section>
+    <section id="veiculos" class="hidden">
+      <div class="panel">
+        <h2>Cadastrar Veículo</h2>
+        <form id="formVeiculo">
+          <label>Empresa Proprietária
+            <select id="empresaVeiculo" required><option value="">Selecione...</option></select>
+          </label>
+          <label>Marca / Modelo<input id="nomeVeiculo" required placeholder="Ex.: Volvo FH 540"></label>
+          <label>Ano<input id="anoVeiculo" type="number" placeholder="2022"></label>
+          <label>Tipo<select id="tipoVeiculo">
+            <option>Carro</option><option>Caminhão</option><option>Carreta / Semirreboque</option><option>Outro</option>
+          </select></label>
+          <label>Placa<input id="placa" placeholder="ABC1D23" required></label>
+          <label>Vencimento CRLV / Doc<input id="vencDoc" type="date"></label>
+          <label>Vencimento Seguro<input id="vencSeguro" type="date"></label>
+          <button type="submit">Cadastrar Veículo</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Frota Cadastrada</h2>
+        <div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Veículo</th><th>Placa</th><th>Venc. Doc</th><th>Venc. Seguro</th><th>Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
+      </div>
+    </section>
 
-<section id="xml" class="hidden">
-  <div class="panel">
-    <h2>Importar XML de Nota Fiscal (Receita)</h2>
-    <p class="muted">Ao importar o XML da NF-e, o cliente será cadastrado automaticamente e uma receita será lançada no Contas a Receber.</p>
-    <input type="file" id="xmlInput" accept=".xml" style="margin-top:10px;">
-  </div>
-</section>
-</main>
-<footer>Sistema Gerencial de Frota &bull; Conectado ao Firebase</footer>
+    <section id="lancamentos" class="hidden">
+      <div class="panel">
+        <h2>Novo Lançamento Financeiro</h2>
+        <form id="formFinanceiro">
+          <label>Tipo
+            <select id="tipo" required>
+              <option value="receita">Receita (A Receber)</option>
+              <option value="despesa">Despesa (A Pagar)</option>
+            </select>
+          </label>
+          <label>Descrição<input id="descricao" required placeholder="Ex.: Serviço de frete"></label>
+          <label>Cliente / Fornecedor<input id="pessoa" placeholder="Nome da empresa/pessoa"></label>
+          <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required></label>
+          <label>Vencimento<input id="vencimento" type="date"></label>
+          <label>Situação
+            <select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select>
+          </label>
+          <button type="submit">Salvar Lançamento</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Registros Financeiros</h2>
+        <div class="table-wrap"><table><thead><tr>
+          <th>Tipo</th><th>Descrição</th><th>Cliente/Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ação</th>
+        </tr></thead><tbody id="listaFinanceira"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="xml" class="hidden">
+      <div class="panel">
+        <h2>Importar XML de Nota Fiscal (Receita)</h2>
+        <p class="muted">Ao importar o XML da NF-e, o cliente será cadastrado automaticamente e uma receita será lançada no Contas a Receber.</p>
+        <input type="file" id="xmlInput" accept=".xml" style="margin-top:10px;">
+      </div>
+    </section>
+  </main>
+  <footer>Sistema Gerencial de Frota &bull; Conectado ao Firebase com Autenticação</footer>
+</div>
 
 <!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // SUAS CHAVES DO FIREBASE AQUI
+  // COLOQUE AQUI AS SUAS CHAVES DO FIREBASE
   const firebaseConfig = {
-  apiKey: "AIzaSyCpKrMskKVtwPyfYK-d3HzacmbZUzadxzg",
-  authDomain: "gestao-diego.firebaseapp.com",
-  projectId: "gestao-diego",
-  storageBucket: "gestao-diego.firebasestorage.app",
-  messagingSenderId: "213157785397",
-  appId: "1:213157785397:web:b3961f1309168b9438667c",
-  measurementId: "G-1DY4EJZQX6"
-};
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJECT_ID.firebaseapp.com",
+    projectId: "SEU_PROJECT_ID",
+    storageBucket: "SEU_PROJECT_ID.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
   const dados = { empresas: [], veiculos: [], financeiro: [] };
 
   const el = id => document.getElementById(id);
   const dinheiro = n => Number(n || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
-  // Carregar Dados do Firebase
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      el("loginScreen").classList.add("hidden");
+      el("appContent").classList.remove("hidden");
+      carregarDados();
+    } else {
+      el("appContent").classList.add("hidden");
+      el("loginScreen").classList.remove("hidden");
+    }
+  });
+
+  el("formLogin").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = el("loginEmail").value.trim();
+    const senha = el("loginSenha").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+      el("formLogin").reset();
+    } catch (error) {
+      alert("Erro ao entrar: " + error.message);
+    }
+  });
+
+  el("btnLogout").addEventListener("click", async () => {
+    if (confirm("Deseja sair do sistema?")) {
+      await signOut(auth);
+    }
+  });
+
   async function carregarDados() {
     dados.empresas = [];
     dados.veiculos = [];
@@ -188,7 +239,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     renderizar();
   }
 
-  // Navegação
   document.querySelectorAll("nav button").forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));
@@ -196,7 +246,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     });
   });
 
-  // Salvar Empresa
   el("formEmpresa").addEventListener("submit", async e => {
     e.preventDefault();
     const nova = { nome: el("nomeEmpresa").value.trim(), cnpj: el("cnpjEmpresa").value.trim() };
@@ -205,7 +254,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     carregarDados();
   });
 
-  // Salvar Veículo
   el("formVeiculo").addEventListener("submit", async e => {
     e.preventDefault();
     const novo = {
@@ -222,7 +270,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     carregarDados();
   });
 
-  // Salvar Financeiro
   el("formFinanceiro").addEventListener("submit", async e => {
     e.preventDefault();
     const novo = {
@@ -238,7 +285,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     carregarDados();
   });
 
-  // Importar XML
   el("xmlInput").addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -268,20 +314,16 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     reader.readAsText(file);
   });
 
-  // Remover Registros
   window.remover = async (colecao, id) => {
     if (!confirm("Deseja excluir este registro?")) return;
     await deleteDoc(doc(db, colecao, id));
     carregarDados();
   };
 
-  // Renderizar Telas
   function renderizar() {
-    // Select de Empresas no formulário de veículos
     el("empresaVeiculo").innerHTML = '<option value="">Selecione...</option>' + 
       dados.empresas.map(e => `<option value="${e.id}">${e.nome}</option>`).join("");
 
-    // Resumo Financeiro
     const soma = tipo => dados.financeiro.filter(x => x.tipo === tipo).reduce((s, x) => s + Number(x.valor), 0);
     el("receitas").textContent = dinheiro(soma("receita"));
     el("despesas").textContent = dinheiro(soma("despesa"));
@@ -290,13 +332,11 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     el("saldo").className = saldo < 0 ? "negative" : "positive";
     el("totalVeiculos").textContent = dados.veiculos.length;
 
-    // Tabela Empresas
     el("listaEmpresas").innerHTML = dados.empresas.map(e => `
       <tr><td>${e.nome}</td><td>${e.cnpj || "—"}</td>
       <td><button class="delete" onclick="remover('empresas','${e.id}')">Excluir</button></td></tr>
     `).join("");
 
-    // Tabela Veículos
     el("listaVeiculos").innerHTML = dados.veiculos.map(v => {
       const emp = dados.empresas.find(e => e.id === v.empresaId);
       return `<tr>
@@ -306,7 +346,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
       </tr>`;
     }).join("");
 
-    // Alertas de Vencimento
     const hoje = new Date().toISOString().split('T')[0];
     let alertasHtml = "";
     dados.veiculos.forEach(v => {
@@ -319,7 +358,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     });
     el("listaAlertas").innerHTML = alertasHtml || '<tr><td colspan="4" class="alert-ok">Nenhum documento ou seguro vencido.</td></tr>';
 
-    // Tabela Financeira
     el("listaFinanceira").innerHTML = dados.financeiro.map(f => `
       <tr>
         <td>${f.tipo === 'receita' ? 'Receita' : 'Despesa'}</td><td>${f.descricao}</td><td>${f.pessoa || '—'}</td>
@@ -328,8 +366,6 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
       </tr>
     `).join("");
   }
-
-  carregarDados();
 </script>
 </body>
 </html>
