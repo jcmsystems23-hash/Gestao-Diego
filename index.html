@@ -4,178 +4,364 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão de Frota e Financeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{font-family:Arial,sans-serif;color:#202938;background:#f3f5f8}
+:root{
+  --bg:#f4f6fb; --surface:#fff; --text:#0f172a; --muted:#64748b; --line:#e8ecf3;
+  --brand:#2563eb; --brand-2:#1d4ed8; --brand-soft:#e8f0ff;
+  --side:#0b1730; --side-2:#13254a;
+  --ok:#059669; --ok-soft:#d1fae5; --warn:#b45309; --warn-soft:#fef3c7; --bad:#dc2626; --bad-soft:#fee2e2;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+}
 *{box-sizing:border-box}
-body{margin:0}
-header{background:#17365d;color:white;padding:22px;display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0 0 7px;font-size:23px}
-header p{margin:0;color:#d8e5f5}
-nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px;background:white}
-button{cursor:pointer;border:0;border-radius:7px;padding:10px 14px;background:#1c5b9b;color:white}
-nav button{background:#e7edf5;color:#17365d}
-nav button.active{background:#17365d;color:white}
-main{max-width:1100px;margin:auto;padding:20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
-.card,.panel{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 8px #182c4010;margin-bottom:16px}
-.card small{color:#667085}
-.card strong{display:block;font-size:25px;margin-top:10px}
-h2{font-size:20px;margin-top:0}
-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-label{display:block;font-size:13px;color:#475467}
-input,select,textarea{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;background:white}
-form button{align-self:end}
-table{width:100%;border-collapse:collapse;min-width:600px}
-th,td{text-align:left;padding:11px;border-bottom:1px solid #e5e7eb;font-size:14px}
-th{background:#f8fafc}
-.table-wrap{overflow-x:auto}
+html,body{margin:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 .hidden{display:none!important}
-.positive{color:#16803c}.negative{color:#c0392b}
-.muted{color:#667085;font-size:13px}
-.delete{background:#b42318;padding:6px 9px}
-.alert-vencido{background:#fecdca;color:#912018;padding:4px 8px;border-radius:4px;font-weight:bold}
-.alert-ok{background:#d1fadf;color:#027a48;padding:4px 8px;border-radius:4px}
-#loginScreen{max-width:400px;margin:80px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-#loginScreen form{display:flex;flex-direction:column;gap:15px}
-footer{text-align:center;color:#667085;font-size:12px;padding:20px}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- LOGIN ---------- */
+#loginScreen{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.login-art{background:radial-gradient(900px 500px at 10% 0%,#2a5bd7 0%,transparent 60%),linear-gradient(160deg,#0b1730,#12306b);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between}
+.login-art .logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
+.logo-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:grid;place-items:center;box-shadow:0 6px 18px rgba(37,99,235,.5)}
+.login-art h2{font-size:38px;line-height:1.15;margin:0 0 14px;letter-spacing:-.02em}
+.login-art p{color:#b9c8e8;max-width:420px;line-height:1.6;margin:0}
+.login-art ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px;color:#d6e2fb;font-size:14px}
+.login-art li{display:flex;gap:10px;align-items:center}
+.login-art li svg{width:18px;height:18px;color:#60a5fa}
+.login-form-wrap{display:grid;place-items:center;padding:32px;background:var(--surface)}
+.login-box{width:100%;max-width:380px}
+.login-box h1{font-size:26px;margin:0 0 6px;letter-spacing:-.02em}
+.login-box .sub{color:var(--muted);margin:0 0 26px;font-size:14px}
+
+/* ---------- FORM ELEMENTS ---------- */
+label{display:block;font-size:12.5px;font-weight:600;color:#334155}
+input,select{display:block;width:100%;margin-top:6px;padding:11px 12px;border:1px solid #d5dce8;border-radius:10px;background:#fff;font:inherit;font-size:14px;color:var(--text);transition:.15s}
+input:focus,select:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-size:14px;font-weight:600;background:var(--brand);color:#fff;transition:.15s}
+.btn:hover{background:var(--brand-2);transform:translateY(-1px)}
+.btn svg{width:17px;height:17px}
+.btn.block{width:100%}
+.btn.ghost{background:var(--brand-soft);color:var(--brand)}
+.btn.ghost:hover{background:#d7e5ff}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px}
+.btn.danger{background:var(--bad-soft);color:var(--bad)}
+.btn.danger:hover{background:#fecaca}
+.btn.ok{background:var(--ok-soft);color:var(--ok)}
+.btn.ok:hover{background:#a7f3d0}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;align-items:end}
+.stack{display:grid;gap:16px}
+
+/* ---------- LAYOUT ---------- */
+#appContent{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+aside{background:linear-gradient(180deg,var(--side),var(--side-2));color:#c7d4f0;padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+aside .logo{display:flex;align-items:center;gap:12px;color:#fff;font-weight:700;padding:4px 8px 24px}
+aside .logo small{display:block;font-weight:500;color:#8ea3cf;font-size:11.5px}
+.nav{display:grid;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#b3c3e6;padding:12px 14px;border-radius:10px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;transition:.15s}
+.nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav button.active{background:linear-gradient(135deg,#2f6bf0,#1d4ed8);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.35)}
+.side-foot{margin-top:auto;padding:14px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12.5px}
+.side-foot b{display:block;color:#fff;font-size:13px;word-break:break-all;margin-bottom:10px}
+.side-foot button{width:100%;border:0;border-radius:8px;padding:9px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:600;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:center;justify-content:center}
+.side-foot button:hover{background:rgba(220,38,38,.6)}
+.content{min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:26px 36px 6px;gap:12px}
+.topbar h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.topbar p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.menu-btn{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px;cursor:pointer;color:var(--text)}
+main{padding:18px 36px 40px;max-width:1280px}
+.panel{background:var(--surface);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:20px;border:1px solid var(--line)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.panel h2{font-size:16.5px;margin:0;letter-spacing:-.01em}
+.panel-head .hint{color:var(--muted);font-size:13px;margin-top:3px}
+
+/* ---------- CARDS ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:20px}
+.stat{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;gap:16px;align-items:center}
+.ico{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;flex:none}
+.ico svg{width:24px;height:24px}
+.ico.green{background:var(--ok-soft);color:var(--ok)}
+.ico.red{background:var(--bad-soft);color:var(--bad)}
+.ico.blue{background:var(--brand-soft);color:var(--brand)}
+.ico.amber{background:var(--warn-soft);color:var(--warn)}
+.stat small{color:var(--muted);font-size:12.5px;font-weight:500}
+.stat strong{display:block;font-size:24px;margin-top:3px;letter-spacing:-.02em}
+.positive{color:var(--ok)}.negative{color:var(--bad)}
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+
+/* ---------- CHART ---------- */
+.chart{display:flex;align-items:flex-end;gap:14px;height:210px;padding:10px 4px 0;border-bottom:1px solid var(--line)}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bars{display:flex;gap:5px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+.bar{width:100%;max-width:26px;border-radius:7px 7px 2px 2px;min-height:3px;transition:height .5s}
+.bar.r{background:linear-gradient(180deg,#34d399,#059669)}
+.bar.d{background:linear-gradient(180deg,#f87171,#dc2626)}
+.xl{display:flex;gap:14px;padding:8px 4px 0}
+.xl span{flex:1;text-align:center;font-size:12px;color:var(--muted);text-transform:capitalize}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+
+/* ---------- TABLES ---------- */
+.table-wrap{overflow-x:auto;margin:0 -8px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:14px 12px;border-bottom:1px solid #f0f3f8;font-size:14px;vertical-align:middle}
+tbody tr:hover{background:#f8faff}
+tbody tr:last-child td{border-bottom:0}
+td.actions{text-align:right;white-space:nowrap}
+td.actions .btn+.btn{margin-left:6px}
+.strong{font-weight:600}
+.sub-text{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.plate{font-family:ui-monospace,Menlo,monospace;font-weight:700;background:#f1f5f9;border:1px solid #d9e0ea;padding:3px 8px;border-radius:6px;letter-spacing:.06em;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+.badge.gray{background:#eef1f6;color:#64748b}
+.empty{text-align:center;color:var(--muted);padding:34px 10px!important;font-size:14px}
+.search{position:relative;min-width:230px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+.search input{margin:0;padding-left:38px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;background:#eef1f6;border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* ---------- UPCOMING LIST ---------- */
+.list{display:grid;gap:4px}
+.li{display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:10px}
+.li:hover{background:#f8faff}
+.li .dot{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none}
+.li .dot svg{width:18px;height:18px}
+.li .grow{flex:1;min-width:0}
+.li .grow b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .grow span{font-size:12.5px;color:var(--muted)}
+.li .val{font-weight:700;font-size:14px}
+
+/* ---------- DROPZONE ---------- */
+.drop{border:2px dashed #c3d0e6;border-radius:16px;padding:48px 20px;text-align:center;background:#fafcff;cursor:pointer;transition:.2s}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop .ico{margin:0 auto 14px;width:62px;height:62px}
+.drop b{display:block;font-size:16px;margin-bottom:6px}
+.drop span{color:var(--muted);font-size:13.5px}
+
+/* ---------- TOAST + DIALOG ---------- */
+#toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:10px;z-index:99}
+.toast{background:#0f172a;color:#fff;padding:13px 18px;border-radius:12px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;animation:in .25s}
+.toast.ok svg{color:#34d399}.toast.err svg{color:#f87171}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+dialog{border:0;border-radius:16px;padding:26px;max-width:380px;width:calc(100% - 40px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(11,23,48,.55);backdrop-filter:blur(3px)}
+dialog h3{margin:0 0 8px;font-size:18px}
+dialog p{margin:0 0 22px;color:var(--muted);font-size:14px;line-height:1.5}
+dialog .row{display:flex;gap:10px;justify-content:flex-end}
+.btn.cancel{background:#eef1f6;color:#334155}
+.btn.cancel:hover{background:#e2e8f0}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:980px){
+  #loginScreen{grid-template-columns:1fr}.login-art{display:none}
+  #appContent{grid-template-columns:1fr}
+  aside{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:50;transform:translateX(-100%);transition:.25s}
+  aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(11,23,48,.5)}
+  .menu-btn{display:block}
+  .topbar,main{padding-left:18px;padding-right:18px}
+  .grid-2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- ============ LOGIN ============ -->
 <div id="loginScreen" class="hidden">
-  <h2>Acesso ao Sistema</h2>
-  <p class="muted">Insira as suas credenciais para entrar.</p>
-  <form id="formLogin">
-    <label>E-mail<input id="loginEmail" type="email" required placeholder="seu@email.com"></label>
-    <label>Palavra-passe<input id="loginSenha" type="password" required placeholder="********"></label>
-    <button type="submit" style="width:100%;margin-top:10px;">Entrar no Sistema</button>
-  </form>
-</div>
-
-<!-- CONTEÚDO PRINCIPAL (Protegido) -->
-<div id="appContent" class="hidden">
-  <header>
+  <div class="login-art">
+    <div class="logo"><div class="logo-mark"><svg viewBox="0 0 24 24" style="color:#fff"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div>FrotaControl</div>
     <div>
-      <h1>Gestão de Frota e Financeiro</h1>
-      <p>Controle financeiro, veículos e documentos da empresa</p>
+      <h2>Sua frota e suas finanças em um só lugar.</h2>
+      <p>Acompanhe vencimentos de documentos e seguros, receitas e despesas, e importe notas fiscais em segundos.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Alertas de CRLV e seguro</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Contas a pagar e a receber</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Importação de XML de NF-e</li>
+      </ul>
     </div>
-    <button id="btnLogout" style="background:#b42318;">Terminar Sessão</button>
-  </header>
-  
-  <nav>
-    <button class="active" data-tab="inicio">Painel</button>
-    <button data-tab="empresas">Empresas</button>
-    <button data-tab="veiculos">Veículos</button>
-    <button data-tab="lancamentos">Financeiro</button>
-    <button data-tab="xml">Importar XML</button>
-  </nav>
-
-  <main>
-    <section id="inicio">
-      <div class="cards">
-        <div class="card"><small>Receitas registradas</small><strong id="receitas">R$ 0,00</strong></div>
-        <div class="card"><small>Despesas registradas</small><strong id="despesas">R$ 0,00</strong></div>
-        <div class="card"><small>Saldo dos lançamentos</small><strong id="saldo">R$ 0,00</strong></div>
-        <div class="card"><small>Veículos cadastrados</small><strong id="totalVeiculos">0</strong></div>
-      </div>
-      <div class="panel" style="margin-top:16px;">
-        <h2>Alertas de Vencimento de Veículos</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Veículo</th><th>Documento / Seguro</th><th>Vencimento</th><th>Status</th></tr></thead>
-            <tbody id="listaAlertas"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section id="empresas" class="hidden">
-      <div class="panel">
-        <h2>Cadastrar Empresa Proprietária</h2>
-        <form id="formEmpresa">
-          <label>Razão Social / Nome<input id="nomeEmpresa" required placeholder="Ex.: Transportes Silva LTDA"></label>
-          <label>CNPJ<input id="cnpjEmpresa" placeholder="00.000.000/0001-00"></label>
-          <button type="submit">Salvar Empresa</button>
-        </form>
-      </div>
-      <div class="panel">
-        <h2>Empresas Cadastradas</h2>
-        <div class="table-wrap"><table><thead><tr><th>Razão Social</th><th>CNPJ</th><th>Ação</th></tr></thead><tbody id="listaEmpresas"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="veiculos" class="hidden">
-      <div class="panel">
-        <h2>Cadastrar Veículo</h2>
-        <form id="formVeiculo">
-          <label>Empresa Proprietária
-            <select id="empresaVeiculo" required><option value="">Selecione...</option></select>
-          </label>
-          <label>Marca / Modelo<input id="nomeVeiculo" required placeholder="Ex.: Volvo FH 540"></label>
-          <label>Ano<input id="anoVeiculo" type="number" placeholder="2022"></label>
-          <label>Tipo<select id="tipoVeiculo">
-            <option>Carro</option><option>Caminhão</option><option>Carreta / Semirreboque</option><option>Outro</option>
-          </select></label>
-          <label>Placa<input id="placa" placeholder="ABC1D23" required></label>
-          <label>Vencimento CRLV / Doc<input id="vencDoc" type="date"></label>
-          <label>Vencimento Seguro<input id="vencSeguro" type="date"></label>
-          <button type="submit">Cadastrar Veículo</button>
-        </form>
-      </div>
-      <div class="panel">
-        <h2>Frota Cadastrada</h2>
-        <div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Veículo</th><th>Placa</th><th>Venc. Doc</th><th>Venc. Seguro</th><th>Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="lancamentos" class="hidden">
-      <div class="panel">
-        <h2>Novo Lançamento Financeiro</h2>
-        <form id="formFinanceiro">
-          <label>Tipo
-            <select id="tipo" required>
-              <option value="receita">Receita (A Receber)</option>
-              <option value="despesa">Despesa (A Pagar)</option>
-            </select>
-          </label>
-          <label>Descrição<input id="descricao" required placeholder="Ex.: Serviço de frete"></label>
-          <label>Cliente / Fornecedor<input id="pessoa" placeholder="Nome da empresa/pessoa"></label>
-          <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required></label>
-          <label>Vencimento<input id="vencimento" type="date"></label>
-          <label>Situação
-            <select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select>
-          </label>
-          <button type="submit">Salvar Lançamento</button>
-        </form>
-      </div>
-      <div class="panel">
-        <h2>Registros Financeiros</h2>
-        <div class="table-wrap"><table><thead><tr>
-          <th>Tipo</th><th>Descrição</th><th>Cliente/Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ação</th>
-        </tr></thead><tbody id="listaFinanceira"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="xml" class="hidden">
-      <div class="panel">
-        <h2>Importar XML de Nota Fiscal (Receita)</h2>
-        <p class="muted">Ao importar o XML da NF-e, o cliente será cadastrado automaticamente e uma receita será lançada no Contas a Receber.</p>
-        <input type="file" id="xmlInput" accept=".xml" style="margin-top:10px;">
-      </div>
-    </section>
-  </main>
-  <footer>Sistema Gerencial de Frota &bull; Conectado ao Firebase com Autenticação</footer>
+    <small style="color:#7d93c2">Acesso restrito a usuários autorizados</small>
+  </div>
+  <div class="login-form-wrap">
+    <div class="login-box">
+      <h1>Bem-vindo de volta</h1>
+      <p class="sub">Entre com as suas credenciais para acessar o sistema.</p>
+      <form id="formLogin" class="stack">
+        <label>E-mail<input id="loginEmail" type="email" required placeholder="seu@email.com" autocomplete="username"></label>
+        <label>Palavra-passe<input id="loginSenha" type="password" required placeholder="••••••••" autocomplete="current-password"></label>
+        <button type="submit" class="btn block" id="btnEntrar">Entrar no sistema</button>
+      </form>
+    </div>
+  </div>
 </div>
 
-<!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+<!-- ============ APP ============ -->
+<div id="appContent" class="hidden">
+  <aside id="sidebar">
+    <div class="logo"><div class="logo-mark"><svg viewBox="0 0 24 24" style="color:#fff"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div><div>FrotaControl<small>Gestão e financeiro</small></div></div>
+    <nav class="nav">
+      <button class="active" data-tab="inicio"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</button>
+      <button data-tab="empresas"><svg viewBox="0 0 24 24"><path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 10h4a1 1 0 011 1v10M2 21h20M8 8h3M8 12h3M8 16h3"/></svg>Empresas</button>
+      <button data-tab="veiculos"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Veículos</button>
+      <button data-tab="lancamentos"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M7 15h3"/></svg>Financeiro</button>
+      <button data-tab="xml"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5"/></svg>Importar XML</button>
+    </nav>
+    <div class="side-foot">
+      Conectado como<b id="userEmail">—</b>
+      <button id="btnLogout"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Terminar sessão</button>
+    </div>
+  </aside>
 
-  // COLOQUE AQUI AS SUAS CHAVES DO FIREBASE
-  const firebaseConfig = {
+  <div class="content">
+    <div class="topbar">
+      <div style="display:flex;gap:14px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div><h1 id="pageTitle">Painel</h1><p id="pageSub">Visão geral da operação</p></div>
+      </div>
+    </div>
+
+    <main>
+      <!-- PAINEL -->
+      <section id="inicio">
+        <div class="cards">
+          <div class="stat"><div class="ico green"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div><div><small>Receitas registradas</small><strong id="receitas">R$ 0,00</strong></div></div>
+          <div class="stat"><div class="ico red"><svg viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div><div><small>Despesas registradas</small><strong id="despesas">R$ 0,00</strong></div></div>
+          <div class="stat"><div class="ico blue"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div><div><small>Saldo dos lançamentos</small><strong id="saldo">R$ 0,00</strong></div></div>
+          <div class="stat"><div class="ico amber"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div><div><small>Veículos cadastrados</small><strong id="totalVeiculos">0</strong></div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>Fluxo dos últimos 6 meses</h2><div class="hint">Por data de vencimento</div></div>
+              <div class="legend"><span><i style="background:#059669"></i>Receitas</span><span><i style="background:#dc2626"></i>Despesas</span></div>
+            </div>
+            <div class="chart" id="chart"></div>
+            <div class="xl" id="chartLabels"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h2>Próximos vencimentos</h2><div class="hint">Lançamentos pendentes</div></div></div>
+            <div class="list" id="listaProximos"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div><h2>Alertas de vencimento de veículos</h2><div class="hint">Documentos vencidos ou a vencer em até 30 dias</div></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Veículo</th><th>Documento / Seguro</th><th>Vencimento</th><th>Status</th></tr></thead>
+              <tbody id="listaAlertas"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPRESAS -->
+      <section id="empresas" class="hidden">
+        <div class="panel">
+          <div class="panel-head"><h2>Cadastrar empresa proprietária</h2></div>
+          <form id="formEmpresa" class="form-grid">
+            <label>Razão social / Nome<input id="nomeEmpresa" required placeholder="Ex.: Transportes Silva LTDA"></label>
+            <label>CNPJ<input id="cnpjEmpresa" placeholder="00.000.000/0001-00"></label>
+            <button type="submit" class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Salvar empresa</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Empresas cadastradas</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Razão social</th><th>CNPJ</th><th style="text-align:right">Ação</th></tr></thead><tbody id="listaEmpresas"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- VEÍCULOS -->
+      <section id="veiculos" class="hidden">
+        <div class="panel">
+          <div class="panel-head"><h2>Cadastrar veículo</h2></div>
+          <form id="formVeiculo" class="form-grid">
+            <label>Empresa proprietária<select id="empresaVeiculo" required><option value="">Selecione...</option></select></label>
+            <label>Marca / Modelo<input id="nomeVeiculo" required placeholder="Ex.: Volvo FH 540"></label>
+            <label>Ano<input id="anoVeiculo" type="number" placeholder="2022"></label>
+            <label>Tipo<select id="tipoVeiculo"><option>Carro</option><option>Caminhão</option><option>Carreta / Semirreboque</option><option>Outro</option></select></label>
+            <label>Placa<input id="placa" placeholder="ABC1D23" required maxlength="8"></label>
+            <label>Vencimento CRLV / Doc<input id="vencDoc" type="date"></label>
+            <label>Vencimento seguro<input id="vencSeguro" type="date"></label>
+            <button type="submit" class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Cadastrar veículo</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Frota cadastrada</h2>
+            <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="buscaVeiculo" placeholder="Buscar placa, modelo ou empresa"></div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Veículo</th><th>Empresa</th><th>Placa</th><th>Doc (CRLV)</th><th>Seguro</th><th style="text-align:right">Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- FINANCEIRO -->
+      <section id="lancamentos" class="hidden">
+        <div class="panel">
+          <div class="panel-head"><h2>Novo lançamento financeiro</h2></div>
+          <form id="formFinanceiro" class="form-grid">
+            <label>Tipo<select id="tipo" required><option value="receita">Receita (a receber)</option><option value="despesa">Despesa (a pagar)</option></select></label>
+            <label>Descrição<input id="descricao" required placeholder="Ex.: Serviço de frete"></label>
+            <label>Cliente / Fornecedor<input id="pessoa" placeholder="Nome da empresa/pessoa"></label>
+            <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required placeholder="0,00"></label>
+            <label>Vencimento<input id="vencimento" type="date"></label>
+            <label>Situação<select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select></label>
+            <button type="submit" class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Salvar lançamento</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Registros financeiros</h2>
+            <div class="toolbar">
+              <div class="seg" id="segFin">
+                <button class="on" data-f="todos">Todos</button><button data-f="receita">Receitas</button><button data-f="despesa">Despesas</button>
+              </div>
+              <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="buscaFin" placeholder="Buscar lançamento"></div>
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Descrição</th><th>Cliente/Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th style="text-align:right">Ação</th></tr></thead><tbody id="listaFinanceira"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- XML -->
+      <section id="xml" class="hidden">
+        <div class="panel">
+          <div class="panel-head"><div><h2>Importar XML de nota fiscal (receita)</h2><div class="hint">O cliente será lido do XML e uma receita pendente será lançada no contas a receber.</div></div></div>
+          <label class="drop" id="dropzone" style="display:block;margin:0">
+            <div class="ico blue"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></div>
+            <b>Clique ou arraste o arquivo XML aqui</b>
+            <span>Somente arquivos .xml de NF-e</span>
+            <input type="file" id="xmlInput" accept=".xml" class="hidden">
+          </label>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<dialog id="dlg">
+  <h3 id="dlgTitle">Confirmar</h3>
+  <p id="dlgMsg"></p>
+  <div class="row"><button class="btn cancel" id="dlgNo">Cancelar</button><button class="btn danger" id="dlgYes">Confirmar</button></div>
+</dialog>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
   apiKey: "AIzaSyCpKrMskKVtwPyfYK-d3HzacmbZUzadxzg",
   authDomain: "gestao-diego.firebaseapp.com",
   projectId: "gestao-diego",
@@ -185,188 +371,322 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
   measurementId: "G-1DY4EJZQX6"
 };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  const dados = { empresas: [], veiculos: [], financeiro: [] };
+const dados = { empresas: [], veiculos: [], financeiro: [] };
+const filtros = { fin: "todos", buscaFin: "", buscaVei: "" };
+const el = id => document.getElementById(id);
+const dinheiro = n => Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const fmtData = d => d ? d.split("-").reverse().join("/") : "—";
+const hojeStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const diasAte = d => Math.round((new Date(d + "T00:00:00") - new Date(hojeStr() + "T00:00:00")) / 86400000);
 
-  const el = id => document.getElementById(id);
-  const dinheiro = n => Number(n || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const ICON_UP = '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+const ICON_DOWN = '<svg viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>';
+const ICON_OK = '<svg viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M5 12l5 5 9-10"/></svg>';
+const ICON_ERR = '<svg viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>';
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      el("loginScreen").classList.add("hidden");
-      el("appContent").classList.remove("hidden");
-      carregarDados();
-    } else {
-      el("appContent").classList.add("hidden");
-      el("loginScreen").classList.remove("hidden");
-    }
+/* ---------- toast & confirm ---------- */
+function toast(msg, tipo = "ok") {
+  const t = document.createElement("div");
+  t.className = "toast " + tipo;
+  t.innerHTML = (tipo === "ok" ? ICON_OK : ICON_ERR) + `<span>${esc(msg)}</span>`;
+  el("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+function confirmar(titulo, msg, rotulo = "Excluir") {
+  return new Promise(res => {
+    el("dlgTitle").textContent = titulo;
+    el("dlgMsg").textContent = msg;
+    el("dlgYes").textContent = rotulo;
+    const dlg = el("dlg");
+    const fim = v => { dlg.close(); el("dlgYes").onclick = el("dlgNo").onclick = null; res(v); };
+    el("dlgYes").onclick = () => fim(true);
+    el("dlgNo").onclick = () => fim(false);
+    dlg.showModal();
   });
+}
 
-  el("formLogin").addEventListener("submit", async e => {
-    e.preventDefault();
-    const email = el("loginEmail").value.trim();
-    const senha = el("loginSenha").value;
-    try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      el("formLogin").reset();
-    } catch (error) {
-      alert("Erro ao entrar: " + error.message);
-    }
-  });
+/* ---------- auth ---------- */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    el("loginScreen").classList.add("hidden");
+    el("appContent").classList.remove("hidden");
+    el("userEmail").textContent = user.email;
+    carregarDados();
+  } else {
+    el("appContent").classList.add("hidden");
+    el("loginScreen").classList.remove("hidden");
+  }
+});
 
-  el("btnLogout").addEventListener("click", async () => {
-    if (confirm("Deseja sair do sistema?")) {
-      await signOut(auth);
-    }
-  });
+el("formLogin").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = el("btnEntrar");
+  btn.disabled = true; btn.textContent = "Entrando...";
+  try {
+    await signInWithEmailAndPassword(auth, el("loginEmail").value.trim(), el("loginSenha").value);
+    el("formLogin").reset();
+  } catch (error) {
+    toast("E-mail ou palavra-passe inválidos.", "err");
+  }
+  btn.disabled = false; btn.textContent = "Entrar no sistema";
+});
 
-  async function carregarDados() {
-    dados.empresas = [];
-    dados.veiculos = [];
-    dados.financeiro = [];
+el("btnLogout").addEventListener("click", async () => {
+  if (await confirmar("Terminar sessão", "Deseja sair do sistema?", "Sair")) await signOut(auth);
+});
 
-    const snapEmp = await getDocs(collection(db, "empresas"));
-    snapEmp.forEach(d => dados.empresas.push({ id: d.id, ...d.data() }));
-
-    const snapVei = await getDocs(collection(db, "veiculos"));
-    snapVei.forEach(d => dados.veiculos.push({ id: d.id, ...d.data() }));
-
-    const snapFin = await getDocs(collection(db, "financeiro"));
-    snapFin.forEach(d => dados.financeiro.push({ id: d.id, ...d.data() }));
-
+/* ---------- dados ---------- */
+async function carregarDados() {
+  try {
+    const ler = async nome => (await getDocs(collection(db, nome))).docs.map(d => ({ id: d.id, ...d.data() }));
+    [dados.empresas, dados.veiculos, dados.financeiro] = await Promise.all([ler("empresas"), ler("veiculos"), ler("financeiro")]);
     renderizar();
+  } catch (err) {
+    toast("Erro ao carregar dados: " + err.message, "err");
   }
+}
 
-  document.querySelectorAll("nav button").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));
-      document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==btn.dataset.tab));
-    });
-  });
+/* ---------- navegação ---------- */
+const titulos = {
+  inicio: ["Painel", "Visão geral da operação"],
+  empresas: ["Empresas", "Empresas proprietárias dos veículos"],
+  veiculos: ["Veículos", "Frota, documentos e seguros"],
+  lancamentos: ["Financeiro", "Contas a pagar e a receber"],
+  xml: ["Importar XML", "Importação de NF-e"]
+};
+function irPara(tab) {
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("hidden", s.id !== tab));
+  el("pageTitle").textContent = titulos[tab][0];
+  el("pageSub").textContent = titulos[tab][1];
+  el("sidebar").classList.remove("open");
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => irPara(b.dataset.tab)));
+el("menuBtn").addEventListener("click", () => el("sidebar").classList.toggle("open"));
+document.addEventListener("click", e => {
+  if (el("sidebar").classList.contains("open") && !e.target.closest("#sidebar") && !e.target.closest("#menuBtn")) el("sidebar").classList.remove("open");
+});
 
-  el("formEmpresa").addEventListener("submit", async e => {
-    e.preventDefault();
-    const nova = { nome: el("nomeEmpresa").value.trim(), cnpj: el("cnpjEmpresa").value.trim() };
-    await addDoc(collection(db, "empresas"), nova);
-    e.target.reset();
+/* ---------- formulários ---------- */
+async function salvar(colecao, obj, form, msg) {
+  try {
+    await addDoc(collection(db, colecao), obj);
+    form.reset();
+    toast(msg);
     carregarDados();
-  });
+  } catch (err) { toast("Erro ao salvar: " + err.message, "err"); }
+}
 
-  el("formVeiculo").addEventListener("submit", async e => {
-    e.preventDefault();
-    const novo = {
-      empresaId: el("empresaVeiculo").value,
-      nome: el("nomeVeiculo").value.trim(),
-      ano: el("anoVeiculo").value,
-      tipo: el("tipoVeiculo").value,
-      placa: el("placa").value.trim().toUpperCase(),
-      vencDoc: el("vencDoc").value,
-      vencSeguro: el("vencSeguro").value
-    };
-    await addDoc(collection(db, "veiculos"), novo);
-    e.target.reset();
-    carregarDados();
-  });
+el("formEmpresa").addEventListener("submit", e => {
+  e.preventDefault();
+  salvar("empresas", { nome: el("nomeEmpresa").value.trim(), cnpj: el("cnpjEmpresa").value.trim() }, e.target, "Empresa cadastrada!");
+});
 
-  el("formFinanceiro").addEventListener("submit", async e => {
-    e.preventDefault();
-    const novo = {
-      tipo: el("tipo").value,
-      descricao: el("descricao").value.trim(),
-      pessoa: el("pessoa").value.trim(),
-      valor: Number(el("valor").value),
-      vencimento: el("vencimento").value,
-      situacao: el("situacao").value
-    };
-    await addDoc(collection(db, "financeiro"), novo);
-    e.target.reset();
-    carregarDados();
-  });
+el("formVeiculo").addEventListener("submit", e => {
+  e.preventDefault();
+  salvar("veiculos", {
+    empresaId: el("empresaVeiculo").value,
+    nome: el("nomeVeiculo").value.trim(),
+    ano: el("anoVeiculo").value,
+    tipo: el("tipoVeiculo").value,
+    placa: el("placa").value.trim().toUpperCase(),
+    vencDoc: el("vencDoc").value,
+    vencSeguro: el("vencSeguro").value
+  }, e.target, "Veículo cadastrado!");
+});
 
-  el("xmlInput").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(evt) {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(evt.target.result, "text/xml");
-      
-      const dest = xmlDoc.querySelector("dest");
-      const nomeCliente = dest ? (dest.querySelector("xNome")?.textContent || "Cliente XML") : "Cliente Desconhecido";
-      const total = xmlDoc.querySelector("vNF")?.textContent || "0";
+el("formFinanceiro").addEventListener("submit", e => {
+  e.preventDefault();
+  salvar("financeiro", {
+    tipo: el("tipo").value,
+    descricao: el("descricao").value.trim(),
+    pessoa: el("pessoa").value.trim(),
+    valor: Number(el("valor").value),
+    vencimento: el("vencimento").value,
+    situacao: el("situacao").value
+  }, e.target, "Lançamento salvo!");
+});
 
-      const novoLançamento = {
-        tipo: "receita",
-        descricao: "Importado via XML - NF-e",
-        pessoa: nomeCliente,
-        valor: Number(total),
-        vencimento: new Date().toISOString().split('T')[0],
-        situacao: "Pendente"
-      };
-
-      await addDoc(collection(db, "financeiro"), novoLançamento);
-      alert(`XML Processado! Cliente "${nomeCliente}" e Receita de R$ ${total} cadastrados.`);
-      e.target.value = "";
+/* ---------- XML ---------- */
+function processarXML(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async evt => {
+    const xmlDoc = new DOMParser().parseFromString(evt.target.result, "text/xml");
+    if (xmlDoc.querySelector("parsererror")) { toast("Arquivo XML inválido.", "err"); return; }
+    const dest = xmlDoc.querySelector("dest");
+    const nomeCliente = dest ? (dest.querySelector("xNome")?.textContent || "Cliente XML") : "Cliente Desconhecido";
+    const total = xmlDoc.querySelector("vNF")?.textContent || "0";
+    try {
+      await addDoc(collection(db, "financeiro"), {
+        tipo: "receita", descricao: "Importado via XML - NF-e", pessoa: nomeCliente,
+        valor: Number(total), vencimento: hojeStr(), situacao: "Pendente"
+      });
+      toast(`XML processado: ${nomeCliente} — ${dinheiro(total)}`);
+      el("xmlInput").value = "";
       carregarDados();
-    };
-    reader.readAsText(file);
-  });
-
-  window.remover = async (colecao, id) => {
-    if (!confirm("Deseja excluir este registro?")) return;
-    await deleteDoc(doc(db, colecao, id));
-    carregarDados();
+    } catch (err) { toast("Erro ao importar: " + err.message, "err"); }
   };
+  reader.readAsText(file);
+}
+el("xmlInput").addEventListener("change", e => processarXML(e.target.files[0]));
+const dz = el("dropzone");
+["dragenter", "dragover"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("over"); }));
+dz.addEventListener("drop", e => processarXML(e.dataTransfer.files[0]));
 
-  function renderizar() {
-    el("empresaVeiculo").innerHTML = '<option value="">Selecione...</option>' + 
-      dados.empresas.map(e => `<option value="${e.id}">${e.nome}</option>`).join("");
+/* ---------- ações de linha ---------- */
+const nomes = { empresas: "esta empresa", veiculos: "este veículo", financeiro: "este lançamento" };
+window.remover = async (colecao, id) => {
+  if (!await confirmar("Excluir registro", `Deseja excluir ${nomes[colecao]}? Esta ação não pode ser desfeita.`)) return;
+  try { await deleteDoc(doc(db, colecao, id)); toast("Registro excluído."); carregarDados(); }
+  catch (err) { toast("Erro ao excluir: " + err.message, "err"); }
+};
+window.alternarSituacao = async id => {
+  const f = dados.financeiro.find(x => x.id === id);
+  if (!f) return;
+  const nova = f.situacao === "Pendente" ? "Pago/recebido" : "Pendente";
+  try { await updateDoc(doc(db, "financeiro", id), { situacao: nova }); toast("Situação atualizada."); carregarDados(); }
+  catch (err) { toast("Erro ao atualizar: " + err.message, "err"); }
+};
 
-    const soma = tipo => dados.financeiro.filter(x => x.tipo === tipo).reduce((s, x) => s + Number(x.valor), 0);
-    el("receitas").textContent = dinheiro(soma("receita"));
-    el("despesas").textContent = dinheiro(soma("despesa"));
-    const saldo = soma("receita") - soma("despesa");
-    el("saldo").textContent = dinheiro(saldo);
-    el("saldo").className = saldo < 0 ? "negative" : "positive";
-    el("totalVeiculos").textContent = dados.veiculos.length;
+/* ---------- filtros ---------- */
+el("buscaFin").addEventListener("input", e => { filtros.buscaFin = e.target.value.toLowerCase(); renderFinanceiro(); });
+el("buscaVeiculo").addEventListener("input", e => { filtros.buscaVei = e.target.value.toLowerCase(); renderVeiculos(); });
+el("segFin").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  filtros.fin = b.dataset.f;
+  document.querySelectorAll("#segFin button").forEach(x => x.classList.toggle("on", x === b));
+  renderFinanceiro();
+});
 
-    el("listaEmpresas").innerHTML = dados.empresas.map(e => `
-      <tr><td>${e.nome}</td><td>${e.cnpj || "—"}</td>
-      <td><button class="delete" onclick="remover('empresas','${e.id}')">Excluir</button></td></tr>
-    `).join("");
+/* ---------- renderização ---------- */
+function badgeData(d) {
+  if (!d) return '<span class="badge gray">Não informado</span>';
+  const n = diasAte(d);
+  if (n < 0) return '<span class="badge bad">Vencido</span>';
+  if (n <= 30) return `<span class="badge warn">${n === 0 ? "Vence hoje" : "Vence em " + n + "d"}</span>`;
+  return '<span class="badge ok">Em dia</span>';
+}
+const linhaVazia = (cols, txt) => `<tr><td colspan="${cols}" class="empty">${txt}</td></tr>`;
 
-    el("listaVeiculos").innerHTML = dados.veiculos.map(v => {
-      const emp = dados.empresas.find(e => e.id === v.empresaId);
-      return `<tr>
-        <td>${emp ? emp.nome : "—"}</td><td>${v.nome} (${v.ano || "—"})</td><td>${v.placa}</td>
-        <td>${v.vencDoc || "—"}</td><td>${v.vencSeguro || "—"}</td>
-        <td><button class="delete" onclick="remover('veiculos','${v.id}')">Excluir</button></td>
-      </tr>`;
-    }).join("");
+function renderVeiculos() {
+  const q = filtros.buscaVei;
+  const lista = dados.veiculos.filter(v => {
+    const emp = dados.empresas.find(e => e.id === v.empresaId);
+    return !q || [v.nome, v.placa, emp?.nome].some(t => String(t || "").toLowerCase().includes(q));
+  });
+  el("listaVeiculos").innerHTML = lista.map(v => {
+    const emp = dados.empresas.find(e => e.id === v.empresaId);
+    return `<tr>
+      <td><span class="strong">${esc(v.nome)}</span><span class="sub-text">${esc(v.tipo || "")}${v.ano ? " • " + esc(v.ano) : ""}</span></td>
+      <td>${emp ? esc(emp.nome) : "—"}</td>
+      <td><span class="plate">${esc(v.placa)}</span></td>
+      <td>${fmtData(v.vencDoc)}<span class="sub-text">${badgeData(v.vencDoc)}</span></td>
+      <td>${fmtData(v.vencSeguro)}<span class="sub-text">${badgeData(v.vencSeguro)}</span></td>
+      <td class="actions"><button class="btn sm danger" onclick="remover('veiculos','${v.id}')">Excluir</button></td>
+    </tr>`;
+  }).join("") || linhaVazia(6, "Nenhum veículo encontrado.");
+}
 
-    const hoje = new Date().toISOString().split('T')[0];
-    let alertasHtml = "";
-    dados.veiculos.forEach(v => {
-      if (v.vencDoc && v.vencDoc <= hoje) {
-        alertasHtml += `<tr><td>${v.nome} (${v.placa})</td><td>CRLV / Documento</td><td>${v.vencDoc}</td><td><span class="alert-vencido">VENCIDO</span></td></tr>`;
-      }
-      if (v.vencSeguro && v.vencSeguro <= hoje) {
-        alertasHtml += `<tr><td>${v.nome} (${v.placa})</td><td>Seguro</td><td>${v.vencSeguro}</td><td><span class="alert-vencido">VENCIDO</span></td></tr>`;
-      }
-    });
-    el("listaAlertas").innerHTML = alertasHtml || '<tr><td colspan="4" class="alert-ok">Nenhum documento ou seguro vencido.</td></tr>';
+function renderFinanceiro() {
+  const q = filtros.buscaFin;
+  const lista = dados.financeiro
+    .filter(f => filtros.fin === "todos" || f.tipo === filtros.fin)
+    .filter(f => !q || [f.descricao, f.pessoa].some(t => String(t || "").toLowerCase().includes(q)))
+    .sort((a, b) => (b.vencimento || "").localeCompare(a.vencimento || ""));
+  el("listaFinanceira").innerHTML = lista.map(f => {
+    const pend = f.situacao === "Pendente";
+    const atrasado = pend && f.vencimento && diasAte(f.vencimento) < 0;
+    const sit = pend ? (atrasado ? '<span class="badge bad">Atrasado</span>' : '<span class="badge warn">Pendente</span>') : '<span class="badge ok">Pago/recebido</span>';
+    return `<tr>
+      <td><span class="badge ${f.tipo === "receita" ? "ok" : "bad"}">${f.tipo === "receita" ? "Receita" : "Despesa"}</span></td>
+      <td class="strong">${esc(f.descricao)}</td>
+      <td>${esc(f.pessoa) || "—"}</td>
+      <td class="strong ${f.tipo === "receita" ? "positive" : "negative"}">${f.tipo === "receita" ? "+" : "−"} ${dinheiro(f.valor)}</td>
+      <td>${fmtData(f.vencimento)}</td>
+      <td>${sit}</td>
+      <td class="actions">
+        <button class="btn sm ${pend ? "ok" : "ghost"}" onclick="alternarSituacao('${f.id}')">${pend ? "Marcar pago" : "Reabrir"}</button>
+        <button class="btn sm danger" onclick="remover('financeiro','${f.id}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join("") || linhaVazia(7, "Nenhum lançamento encontrado.");
+}
 
-    el("listaFinanceira").innerHTML = dados.financeiro.map(f => `
-      <tr>
-        <td>${f.tipo === 'receita' ? 'Receita' : 'Despesa'}</td><td>${f.descricao}</td><td>${f.pessoa || '—'}</td>
-        <td>${dinheiro(f.valor)}</td><td>${f.vencimento || '—'}</td><td>${f.situacao}</td>
-        <td><button class="delete" onclick="remover('financeiro','${f.id}')">Excluir</button></td>
-      </tr>
-    `).join("");
+function renderGrafico() {
+  const meses = [];
+  const base = new Date(); base.setDate(1);
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+    meses.push({ k: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, l: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), r: 0, d: 0 });
   }
+  dados.financeiro.forEach(f => {
+    const m = meses.find(x => x.k === (f.vencimento || "").slice(0, 7));
+    if (m) m[f.tipo === "receita" ? "r" : "d"] += Number(f.valor || 0);
+  });
+  const max = Math.max(1, ...meses.map(m => Math.max(m.r, m.d)));
+  el("chart").innerHTML = meses.map(m => `<div class="col"><div class="bars">
+    <div class="bar r" style="height:${(m.r / max) * 100}%" title="Receitas: ${dinheiro(m.r)}"></div>
+    <div class="bar d" style="height:${(m.d / max) * 100}%" title="Despesas: ${dinheiro(m.d)}"></div></div></div>`).join("");
+  el("chartLabels").innerHTML = meses.map(m => `<span>${m.l}</span>`).join("");
+}
+
+function renderProximos() {
+  const lista = dados.financeiro.filter(f => f.situacao === "Pendente" && f.vencimento)
+    .sort((a, b) => a.vencimento.localeCompare(b.vencimento)).slice(0, 6);
+  el("listaProximos").innerHTML = lista.map(f => {
+    const n = diasAte(f.vencimento);
+    const rec = f.tipo === "receita";
+    const quando = n < 0 ? `atrasado ${-n}d` : n === 0 ? "vence hoje" : `em ${n}d`;
+    return `<div class="li">
+      <div class="dot ${rec ? "ico green" : "ico red"}" style="width:38px;height:38px;border-radius:11px">${rec ? ICON_UP : ICON_DOWN}</div>
+      <div class="grow"><b>${esc(f.descricao)}</b><span>${esc(f.pessoa || "—")} • ${fmtData(f.vencimento)} (${quando})</span></div>
+      <div class="val ${rec ? "positive" : "negative"}">${dinheiro(f.valor)}</div>
+    </div>`;
+  }).join("") || '<div class="empty" style="padding:34px 10px">Nenhum lançamento pendente.</div>';
+}
+
+function renderizar() {
+  el("empresaVeiculo").innerHTML = '<option value="">Selecione...</option>' +
+    dados.empresas.map(e => `<option value="${e.id}">${esc(e.nome)}</option>`).join("");
+
+  const soma = tipo => dados.financeiro.filter(x => x.tipo === tipo).reduce((s, x) => s + Number(x.valor || 0), 0);
+  el("receitas").textContent = dinheiro(soma("receita"));
+  el("despesas").textContent = dinheiro(soma("despesa"));
+  const saldo = soma("receita") - soma("despesa");
+  el("saldo").textContent = dinheiro(saldo);
+  el("saldo").className = saldo < 0 ? "negative" : "positive";
+  el("totalVeiculos").textContent = dados.veiculos.length;
+
+  el("listaEmpresas").innerHTML = dados.empresas.map(e => `
+    <tr><td class="strong">${esc(e.nome)}</td><td>${esc(e.cnpj) || "—"}</td>
+    <td class="actions"><button class="btn sm danger" onclick="remover('empresas','${e.id}')">Excluir</button></td></tr>
+  `).join("") || linhaVazia(3, "Nenhuma empresa cadastrada.");
+
+  renderVeiculos();
+  renderFinanceiro();
+  renderGrafico();
+  renderProximos();
+
+  const alertas = [];
+  dados.veiculos.forEach(v => {
+    [["CRLV / Documento", v.vencDoc], ["Seguro", v.vencSeguro]].forEach(([rotulo, data]) => {
+      if (data && diasAte(data) <= 30) alertas.push({ v, rotulo, data });
+    });
+  });
+  alertas.sort((a, b) => a.data.localeCompare(b.data));
+  el("listaAlertas").innerHTML = alertas.map(a => `<tr>
+    <td><span class="strong">${esc(a.v.nome)}</span> <span class="plate" style="margin-left:6px">${esc(a.v.placa)}</span></td>
+    <td>${a.rotulo}</td><td>${fmtData(a.data)}</td><td>${badgeData(a.data)}</td></tr>`).join("")
+    || `<tr><td colspan="4" class="empty"><span class="badge ok">Tudo em dia</span><br><br>Nenhum documento ou seguro vencido ou próximo do vencimento.</td></tr>`;
+}
 </script>
 </body>
 </html>
