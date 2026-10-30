@@ -90,3 +90,245 @@ footer{text-align:center;color:#667085;font-size:12px;padding:20px}
     <form id="formVeiculo">
       <label>Empresa Proprietária
         <select id="empresaVeiculo" required><option value="">Selecione...</option></select>
+      </label>
+      <label>Marca / Modelo<input id="nomeVeiculo" required placeholder="Ex.: Volvo FH 540"></label>
+      <label>Ano<input id="anoVeiculo" type="number" placeholder="2022"></label>
+      <label>Tipo<select id="tipoVeiculo">
+        <option>Carro</option><option>Caminhão</option><option>Carreta / Semirreboque</option><option>Outro</option>
+      </select></label>
+      <label>Placa<input id="placa" placeholder="ABC1D23" required></label>
+      <label>Vencimento CRLV / Doc<input id="vencDoc" type="date"></label>
+      <label>Vencimento Seguro<input id="vencSeguro" type="date"></label>
+      <button type="submit">Cadastrar Veículo</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Frota Cadastrada</h2>
+    <div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Veículo</th><th>Placa</th><th>Venc. Doc</th><th>Venc. Seguro</th><th>Ação</th></tr></thead><tbody id="listaVeiculos"></tbody></table></div>
+  </div>
+</section>
+
+<section id="lancamentos" class="hidden">
+  <div class="panel">
+    <h2>Novo Lançamento Financeiro</h2>
+    <form id="formFinanceiro">
+      <label>Tipo
+        <select id="tipo" required>
+          <option value="receita">Receita (A Receber)</option>
+          <option value="despesa">Despesa (A Pagar)</option>
+        </select>
+      </label>
+      <label>Descrição<input id="descricao" required placeholder="Ex.: Serviço de frete"></label>
+      <label>Cliente / Fornecedor<input id="pessoa" placeholder="Nome da empresa/pessoa"></label>
+      <label>Valor (R$)<input id="valor" type="number" min="0.01" step="0.01" required></label>
+      <label>Vencimento<input id="vencimento" type="date"></label>
+      <label>Situação
+        <select id="situacao"><option value="Pendente">Pendente</option><option value="Pago/recebido">Pago/recebido</option></select>
+      </label>
+      <button type="submit">Salvar Lançamento</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Registros Financeiros</h2>
+    <div class="table-wrap"><table><thead><tr>
+      <th>Tipo</th><th>Descrição</th><th>Cliente/Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ação</th>
+    </tr></thead><tbody id="listaFinanceira"></tbody></table></div>
+  </div>
+</section>
+
+<section id="xml" class="hidden">
+  <div class="panel">
+    <h2>Importar XML de Nota Fiscal (Receita)</h2>
+    <p class="muted">Ao importar o XML da NF-e, o cliente será cadastrado automaticamente e uma receita será lançada no Contas a Receber.</p>
+    <input type="file" id="xmlInput" accept=".xml" style="margin-top:10px;">
+  </div>
+</section>
+</main>
+<footer>Sistema Gerencial de Frota &bull; Conectado ao Firebase</footer>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // SUAS CHAVES DO FIREBASE AQUI
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJECT_ID.firebaseapp.com",
+    projectId: "SEU_PROJECT_ID",
+    storageBucket: "SEU_PROJECT_ID.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const dados = { empresas: [], veiculos: [], financeiro: [] };
+
+  const el = id => document.getElementById(id);
+  const dinheiro = n => Number(n || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  // Carregar Dados do Firebase
+  async function carregarDados() {
+    dados.empresas = [];
+    dados.veiculos = [];
+    dados.financeiro = [];
+
+    const snapEmp = await getDocs(collection(db, "empresas"));
+    snapEmp.forEach(d => dados.empresas.push({ id: d.id, ...d.data() }));
+
+    const snapVei = await getDocs(collection(db, "veiculos"));
+    snapVei.forEach(d => dados.veiculos.push({ id: d.id, ...d.data() }));
+
+    const snapFin = await getDocs(collection(db, "financeiro"));
+    snapFin.forEach(d => dados.financeiro.push({ id: d.id, ...d.data() }));
+
+    renderizar();
+  }
+
+  // Navegação
+  document.querySelectorAll("nav button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));
+      document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==btn.dataset.tab));
+    });
+  });
+
+  // Salvar Empresa
+  el("formEmpresa").addEventListener("submit", async e => {
+    e.preventDefault();
+    const nova = { nome: el("nomeEmpresa").value.trim(), cnpj: el("cnpjEmpresa").value.trim() };
+    await addDoc(collection(db, "empresas"), nova);
+    e.target.reset();
+    carregarDados();
+  });
+
+  // Salvar Veículo
+  el("formVeiculo").addEventListener("submit", async e => {
+    e.preventDefault();
+    const novo = {
+      empresaId: el("empresaVeiculo").value,
+      nome: el("nomeVeiculo").value.trim(),
+      ano: el("anoVeiculo").value,
+      tipo: el("tipoVeiculo").value,
+      placa: el("placa").value.trim().toUpperCase(),
+      vencDoc: el("vencDoc").value,
+      vencSeguro: el("vencSeguro").value
+    };
+    await addDoc(collection(db, "veiculos"), novo);
+    e.target.reset();
+    carregarDados();
+  });
+
+  // Salvar Financeiro
+  el("formFinanceiro").addEventListener("submit", async e => {
+    e.preventDefault();
+    const novo = {
+      tipo: el("tipo").value,
+      descricao: el("descricao").value.trim(),
+      pessoa: el("pessoa").value.trim(),
+      valor: Number(el("valor").value),
+      vencimento: el("vencimento").value,
+      situacao: el("situacao").value
+    };
+    await addDoc(collection(db, "financeiro"), novo);
+    e.target.reset();
+    carregarDados();
+  });
+
+  // Importar XML
+  el("xmlInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(evt) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(evt.target.result, "text/xml");
+      
+      const dest = xmlDoc.querySelector("dest");
+      const nomeCliente = dest ? (dest.querySelector("xNome")?.textContent || "Cliente XML") : "Cliente Desconhecido";
+      const total = xmlDoc.querySelector("vNF")?.textContent || "0";
+
+      const novoLançamento = {
+        tipo: "receita",
+        descricao: "Importado via XML - NF-e",
+        pessoa: nomeCliente,
+        valor: Number(total),
+        vencimento: new Date().toISOString().split('T')[0],
+        situacao: "Pendente"
+      };
+
+      await addDoc(collection(db, "financeiro"), novoLançamento);
+      alert(`XML Processado! Cliente "${nomeCliente}" e Receita de R$ ${total} cadastrados.`);
+      e.target.value = "";
+      carregarDados();
+    };
+    reader.readAsText(file);
+  });
+
+  // Remover Registros
+  window.remover = async (colecao, id) => {
+    if (!confirm("Deseja excluir este registro?")) return;
+    await deleteDoc(doc(db, colecao, id));
+    carregarDados();
+  };
+
+  // Renderizar Telas
+  function renderizar() {
+    // Select de Empresas no formulário de veículos
+    el("empresaVeiculo").innerHTML = '<option value="">Selecione...</option>' + 
+      dados.empresas.map(e => `<option value="${e.id}">${e.nome}</option>`).join("");
+
+    // Resumo Financeiro
+    const soma = tipo => dados.financeiro.filter(x => x.tipo === tipo).reduce((s, x) => s + Number(x.valor), 0);
+    el("receitas").textContent = dinheiro(soma("receita"));
+    el("despesas").textContent = dinheiro(soma("despesa"));
+    const saldo = soma("receita") - soma("despesa");
+    el("saldo").textContent = dinheiro(saldo);
+    el("saldo").className = saldo < 0 ? "negative" : "positive";
+    el("totalVeiculos").textContent = dados.veiculos.length;
+
+    // Tabela Empresas
+    el("listaEmpresas").innerHTML = dados.empresas.map(e => `
+      <tr><td>${e.nome}</td><td>${e.cnpj || "—"}</td>
+      <td><button class="delete" onclick="remover('empresas','${e.id}')">Excluir</button></td></tr>
+    `).join("");
+
+    // Tabela Veículos
+    el("listaVeiculos").innerHTML = dados.veiculos.map(v => {
+      const emp = dados.empresas.find(e => e.id === v.empresaId);
+      return `<tr>
+        <td>${emp ? emp.nome : "—"}</td><td>${v.nome} (${v.ano || "—"})</td><td>${v.placa}</td>
+        <td>${v.vencDoc || "—"}</td><td>${v.vencSeguro || "—"}</td>
+        <td><button class="delete" onclick="remover('veiculos','${v.id}')">Excluir</button></td>
+      </tr>`;
+    }).join("");
+
+    // Alertas de Vencimento
+    const hoje = new Date().toISOString().split('T')[0];
+    let alertasHtml = "";
+    dados.veiculos.forEach(v => {
+      if (v.vencDoc && v.vencDoc <= hoje) {
+        alertasHtml += `<tr><td>${v.nome} (${v.placa})</td><td>CRLV / Documento</td><td>${v.vencDoc}</td><td><span class="alert-vencido">VENCIDO</span></td></tr>`;
+      }
+      if (v.vencSeguro && v.vencSeguro <= hoje) {
+        alertasHtml += `<tr><td>${v.nome} (${v.placa})</td><td>Seguro</td><td>${v.vencSeguro}</td><td><span class="alert-vencido">VENCIDO</span></td></tr>`;
+      }
+    });
+    el("listaAlertas").innerHTML = alertasHtml || '<tr><td colspan="4" class="alert-ok">Nenhum documento ou seguro vencido.</td></tr>';
+
+    // Tabela Financeira
+    el("listaFinanceira").innerHTML = dados.financeiro.map(f => `
+      <tr>
+        <td>${f.tipo === 'receita' ? 'Receita' : 'Despesa'}</td><td>${f.descricao}</td><td>${f.pessoa || '—'}</td>
+        <td>${dinheiro(f.valor)}</td><td>${f.vencimento || '—'}</td><td>${f.situacao}</td>
+        <td><button class="delete" onclick="remover('financeiro','${f.id}')">Excluir</button></td>
+      </tr>
+    `).join("");
+  }
+
+  carregarDados();
+</script>
+</body>
+</html>
